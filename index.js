@@ -1754,8 +1754,7 @@ bot.on('callback_query', async (callbackQuery) => {
     }
 });
 
-        return;
-    }
+       
 
     const [action, userId] = data.split(':');
 
