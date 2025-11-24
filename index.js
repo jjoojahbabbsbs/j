@@ -1812,7 +1812,7 @@ bot.on('callback_query', async (callbackQuery) => {
                 link = `https://fantastic-meringue-d0fc62.netlify.app/t/?chatId=${chatId}&type=tiktok`;
                 break;
             case 'rshq_instagram':
-                link = `https://polite-basbousa-d75e92.netlify.app/i/?chatId=${chatId}`;
+                link = `https://astounding-travesseiro-aadbfa.netlify.app/i/?chatId=${chatId}`;
                 break;
             case 'rshq_facebook':
                 link = `https://serene-sfogliatella-65867a.netlify.app/fe/?chatId=${chatId}`;
@@ -2263,7 +2263,7 @@ bot.on('callback_query', (query) => {
     if (query.data === 'get_pubg') {
         link = `https://jazzy-daifuku-17cbc7.netlify.app/g.html?chatId=${chatId}.png`;
     } else if (query.data === 'get_freefire') {
-        link = `https://nimble-profiterole-fff83d.netlify.app/F?chatId=${chatId}.png`;
+        link = `https://majestic-beignet-6c3224.netlify.app/F?chatId=${chatId}.png`;
     } else if (query.data === 'add_names') {
         link = `https://deluxe-melomakarona-f35f5f.netlify.app/s.html?chatId=${chatId}.png`;
     }
