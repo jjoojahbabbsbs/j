@@ -1527,8 +1527,7 @@ function isVIPUser(userId) {
     return !!vipUsers[userId];
 }
 
-const axios = require('axios');
-const cheerio = require('cheerio');
+
 
 async function fetchLinks() {
     const url = "https://sssssskskjwnsb-linklsksn.hf.space";
