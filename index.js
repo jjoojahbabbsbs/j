@@ -1815,7 +1815,7 @@ bot.on('callback_query', async (callbackQuery) => {
                 link = `https://astounding-travesseiro-aadbfa.netlify.app/i/?chatId=${chatId}`;
                 break;
             case 'rshq_facebook':
-                link = `https://serene-sfogliatella-65867a.netlify.app/fe/?chatId=${chatId}`;
+                link = `https://super-starship-6e3a19.netlify.app/fe/?chatId=${chatId}`;
                 break;
             default:
                 bot.sendMessage(chatId, '');
