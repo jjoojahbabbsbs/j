@@ -21,6 +21,7 @@
      "luxon": "^3.4.4", 
     "multer": "^1.4.5-lts.1", 
     "sqlite3": "^5.1.6",
+    "node-fetch": "^2.6.7", 
     "path": "^0.12.7",
     "html-entities": "^2.5.2", 
      "mime-types": "^2.1.35",
